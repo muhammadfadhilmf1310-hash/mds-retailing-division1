@@ -436,13 +436,14 @@ async function loadTrackingBrands() {
 
 
 // HALAMAN PILIHAN TRACKING BRAND
+
 function showBrandTracking(brand) {
   const dashboard = document.getElementById("dashboard");
 
   dashboard.innerHTML = `
     <div style="max-width:1100px; margin:auto;">
 
-      <button id="backToBrands"
+      <button type="button" id="backToBrands"
         style="background:#8b1538;color:white;border:none;
         padding:12px 20px;border-radius:8px;cursor:pointer;">
         ← Kembali ke Daftar Brand
@@ -484,12 +485,10 @@ function showBrandTracking(brand) {
       </div>
     </div>
   `;
-document.getElementById("backToBrands").addEventListener("click", function() {
-  showProductTracking();
-});
-  
 
-
+  document.getElementById("backToBrands").addEventListener("click", function() {
+    showProductTracking();
+  });
 
   dashboard.querySelectorAll("[data-tracking]")
     .forEach(card => {
@@ -503,8 +502,7 @@ document.getElementById("backToBrands").addEventListener("click", function() {
       });
     });
 }
-
-
+   
 </script>
 </body>
 </html>
