@@ -484,15 +484,11 @@ function showBrandTracking(brand) {
       </div>
     </div>
   `;
-
-  
-const backButton = document.getElementById("backToBrands");
-
-backButton.onclick = function(event) {
-  event.preventDefault();
-  event.stopPropagation();
+document.getElementById("backToBrands").addEventListener("click", function() {
   showProductTracking();
-};
+});
+  }
+
 
 
   dashboard.querySelectorAll("[data-tracking]")
