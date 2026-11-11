@@ -268,21 +268,92 @@ const staffMenu = `
   </div>
 `;
 
-dashboard.innerHTML = `
-  <div style="max-width:1100px; margin:auto;">
-    <h2>MDS RETAILING</h2>
-    <h3>DIVISION 1 MANAGEMENT</h3>
-    <hr>
 
-    <h3>Selamat Datang, ${result.user.nama || username}!</h3>
-    <p>Role: ${result.user.role}</p>
-    <p>World: ${result.user.world}</p>
+function showDashboard() {
+  dashboard.innerHTML = `
+    <div style="max-width:1100px; margin:auto;">
+      <h2>MDS RETAILING</h2>
+      <h3>DIVISION 1 MANAGEMENT</h3>
+      <hr>
 
-    <h3 style="margin-top:30px;">MENU UTAMA</h3>
+      <h3>Selamat Datang, ${result.user.nama || username}!</h3>
+      <p>Role: ${result.user.role}</p>
+      <p>World: ${result.user.world}</p>
 
-    ${role === "supervisor" ? supervisorMenu : staffMenu}
-  </div>
-`;
+      <h3 style="margin-top:30px;">MENU UTAMA</h3>
+
+      ${role === "supervisor" ? supervisorMenu : staffMenu}
+    </div>
+  `;
+
+  // Mengaktifkan klik pada menu
+  dashboard.querySelectorAll(".menu-card").forEach(card => {
+    card.addEventListener("click", function() {
+      const menuName = card.querySelector("h3").textContent.trim();
+
+      if (menuName === "Product Tracking") {
+        showProductTracking();
+      } else {
+        alert("Menu " + menuName + " akan segera tersedia.");
+      }
+    });
+  });
+}
+
+// Halaman Product Tracking
+function showProductTracking() {
+  dashboard.innerHTML = `
+    <div style="max-width:1100px; margin:auto;">
+
+      <button id="backDashboard"
+        style="background:#8b1538; color:white; border:none;
+        padding:12px 20px; border-radius:8px; cursor:pointer;">
+        ← Kembali ke Dashboard
+      </button>
+
+      <h2 style="margin-top:25px;">PRODUCT TRACKING</h2>
+      <h3>MDS RETAILING - DIVISION 1</h3>
+      <hr>
+
+      <p>Monitoring kondisi dan performa produk setiap brand.</p>
+
+      <div class="menu-grid">
+
+        <div class="menu-card">
+          <span>🏆</span>
+          <h3>Best Seller</h3>
+          <p>Monitoring produk dengan penjualan tertinggi.</p>
+        </div>
+
+        <div class="menu-card">
+          <span>🆕</span>
+          <h3>New Arrival</h3>
+          <p>Monitoring produk baru yang masuk ke toko.</p>
+        </div>
+
+        <div class="menu-card">
+          <span>📏</span>
+          <h3>Missing Size</h3>
+          <p>Monitoring ukuran produk yang kosong.</p>
+        </div>
+
+        <div class="menu-card">
+          <span>📦</span>
+          <h3>Dead Stock</h3>
+          <p>Monitoring produk dengan pergerakan penjualan rendah.</p>
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+  document.getElementById("backDashboard").addEventListener("click", showDashboard);
+}
+
+// Tampilkan Dashboard pertama kali
+showDashboard();
+
 
 
   console.log("Data pengguna:", result.user);
