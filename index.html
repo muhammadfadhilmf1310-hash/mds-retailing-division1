@@ -133,12 +133,53 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById("loginForm").addEventListener("submit", function(event) {
-      event.preventDefault();
-      document.getElementById("message").textContent =
-        "Tampilan login sudah siap. Koneksi server akan ditambahkan pada tahap berikutnya.";
+ <script>
+
+const API_URL = "https://script.google.com/macros/s/AKfycbw5z_xDVn_QwNtwQhul8kEvhZYaK54-qijn863jZ5g66i27YdkNlglLpAU6JFzEkupx/exec";
+
+document.getElementById("loginForm").addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const message = document.getElementById("message");
+  const button = document.getElementById("loginButton");
+
+  button.disabled = true;
+  message.style.color = "#555";
+  message.textContent = "Sedang memeriksa login...";
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "login",
+        username: username,
+        password: password
+      })
     });
-  </script>
+
+    const result = await response.json();
+
+    if (result.success) {
+      message.style.color = "green";
+      message.textContent = "Login berhasil. Selamat datang!";
+      console.log("Data pengguna:", result.user);
+    } else {
+      message.style.color = "#b00020";
+      message.textContent = result.message || "Login gagal.";
+    }
+  } catch (error) {
+    message.style.color = "#b00020";
+    message.textContent = "Koneksi gagal: " + error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
+</script>
 </body>
 </html>
