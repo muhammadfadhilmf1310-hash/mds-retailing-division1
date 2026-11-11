@@ -496,12 +496,53 @@ function showBrandTracking(brand) {
       card.addEventListener("click", function() {
         const trackingType = this.dataset.tracking;
 
-        alert(
-          trackingType + " untuk brand " + brand.brandName +
-          " akan kita buat pada tahap berikutnya."
-        );
+       showTrackingForm(trackingType, brand);
       });
     });
+}
+// FORM INPUT PRODUCT TRACKING
+function showTrackingForm(trackingType, brand) {
+  const dashboard = document.getElementById("dashboard");
+
+  dashboard.innerHTML = `
+    <div style="max-width:700px; margin:auto; padding:20px;">
+
+      <button type="button" onclick="showBrandTracking(window.selectedBrand)"
+        style="background:#8b1538;color:white;border:none;
+        padding:12px 20px;border-radius:8px;cursor:pointer;">
+        ← Kembali
+      </button>
+
+      <h2>${trackingType}</h2>
+      <h3>${brand.brandName}</h3>
+      <p>World: ${brand.world}</p>
+      <hr>
+
+      <label>Nama Produk</label>
+      <input id="productName" type="text"
+        placeholder="Masukkan nama produk"
+        style="width:100%;padding:12px;margin:8px 0 16px;">
+
+      <label>Article Code</label>
+      <input id="articleCode" type="text"
+        placeholder="Masukkan kode artikel"
+        style="width:100%;padding:12px;margin:8px 0 16px;">
+
+      <label>Jumlah Produk</label>
+      <input id="productQty" type="number" min="1"
+        placeholder="Masukkan jumlah"
+        style="width:100%;padding:12px;margin:8px 0 16px;">
+
+      <button type="button" onclick="alert('Form akan dihubungkan ke database pada tahap berikutnya.')"
+        style="background:#8b1538;color:white;border:none;
+        padding:12px 20px;border-radius:8px;cursor:pointer;">
+        SIMPAN
+      </button>
+
+    </div>
+  `;
+
+  window.selectedBrand = brand;
 }
    
 </script>
