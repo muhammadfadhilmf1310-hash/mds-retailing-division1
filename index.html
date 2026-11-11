@@ -487,9 +487,9 @@ function showBrandTracking(brand) {
     </div>
   `;
 
-  document.getElementById("backToBrands").addEventListener("click", function() {
-    showProductTracking();
-  });
+ document.getElementById("backToBrands").addEventListener("click", function() {
+  window.showProductTracking();
+});
 
   dashboard.querySelectorAll("[data-tracking]")
     .forEach(card => {
