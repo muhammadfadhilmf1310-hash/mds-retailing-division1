@@ -485,8 +485,15 @@ function showBrandTracking(brand) {
     </div>
   `;
 
-  document.getElementById("backToBrands")
-    .addEventListener("click", showProductTracking);
+  
+const backButton = document.getElementById("backToBrands");
+
+backButton.onclick = function(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  showProductTracking();
+};
+
 
   dashboard.querySelectorAll("[data-tracking]")
     .forEach(card => {
