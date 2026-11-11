@@ -316,7 +316,9 @@ function showProductTracking() {
       <hr>
 
       <p>Monitoring kondisi dan performa produk setiap brand.</p>
-
+<div id="trackingBrandArea">
+  <p>Memuat daftar brand...</p>
+</div>
       <div class="menu-grid">
 
         <div class="menu-card">
@@ -349,6 +351,7 @@ function showProductTracking() {
   `;
 
   document.getElementById("backDashboard").addEventListener("click", showDashboard);
+  loadTrackingBrands();
 }
 
 // Tampilkan Dashboard pertama kali
