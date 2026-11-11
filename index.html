@@ -170,10 +170,28 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     const result = await response.json();
 
     if (result.success) {
-      message.style.color = "green";
-      message.textContent = "Login berhasil. Selamat datang!";
-      console.log("Data pengguna:", result.user);
-    } else {
+  // Simpan token login
+  sessionStorage.setItem("mds_token", result.token);
+
+  // Sembunyikan halaman login
+  document.querySelector(".login-card").style.display = "none";
+
+  // Tampilkan dashboard
+  const dashboard = document.getElementById("dashboard");
+  dashboard.style.display = "block";
+
+  // Tampilkan informasi pengguna
+  dashboard.innerHTML = `
+    <h2>MDS RETAILING</h2>
+    <h3>DIVISION 1 MANAGEMENT</h3>
+    <hr>
+    <h3>Selamat Datang, ${result.user.nama || username}!</h3>
+    <p>Role: ${result.user.role}</p>
+    <p>World: ${result.user.world}</p>
+  `;
+
+  console.log("Data pengguna:", result.user);
+} else {
       message.style.color = "#b00020";
       message.textContent = result.message || "Login gagal.";
     }
