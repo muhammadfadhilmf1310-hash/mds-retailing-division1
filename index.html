@@ -372,6 +372,55 @@ showDashboard();
   }
 });
 
+async function loadTrackingBrands() {
+  const token = sessionStorage.getItem("mds_token");
+  const area = document.getElementById("trackingBrandArea");
+
+  if (!area) return;
+
+  area.innerHTML = "<p>Memuat daftar brand...</p>";
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "getTrackingBrands",
+        token: token
+      })
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      area.innerHTML = `<p>${result.message || "Gagal memuat brand."}</p>`;
+      return;
+    }
+
+    if (!result.brands || result.brands.length === 0) {
+      area.innerHTML = "<p>Belum ada brand yang ditugaskan.</p>";
+      return;
+    }
+
+    area.innerHTML = `
+      <h3>DAFTAR BRAND</h3>
+      <div class="menu-grid">
+        ${result.brands.map(brand => `
+          <div class="menu-card">
+            <h3>${brand.brandName}</h3>
+            <p>World: ${brand.world}</p>
+          </div>
+        `).join("")}
+      </div>
+    `;
+
+  } catch (error) {
+    area.innerHTML = `<p>Gagal menghubungi server: ${error.message}</p>`;
+  }
+}
+
 </script>
 </body>
 </html>
