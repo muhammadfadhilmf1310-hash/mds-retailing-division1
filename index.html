@@ -372,6 +372,7 @@ showDashboard();
   }
 });
 
+
 async function loadTrackingBrands() {
   const token = sessionStorage.getItem("mds_token");
   const area = document.getElementById("trackingBrandArea");
@@ -407,19 +408,99 @@ async function loadTrackingBrands() {
     area.innerHTML = `
       <h3>DAFTAR BRAND</h3>
       <div class="menu-grid">
-        ${result.brands.map(brand => `
-          <div class="menu-card">
+        ${result.brands.map((brand, index) => `
+          <div class="menu-card"
+            data-brand-index="${index}"
+            style="cursor:pointer;">
             <h3>${brand.brandName}</h3>
             <p>World: ${brand.world}</p>
+            <small>Klik untuk membuka tracking →</small>
           </div>
         `).join("")}
       </div>
     `;
 
+    area.querySelectorAll(".menu-card").forEach(card => {
+      card.addEventListener("click", function() {
+        const index = Number(this.dataset.brandIndex);
+        const selectedBrand = result.brands[index];
+
+        showBrandTracking(selectedBrand);
+      });
+    });
+
   } catch (error) {
     area.innerHTML = `<p>Gagal menghubungi server: ${error.message}</p>`;
   }
 }
+
+
+// HALAMAN PILIHAN TRACKING BRAND
+function showBrandTracking(brand) {
+  const dashboard = document.getElementById("dashboard");
+
+  dashboard.innerHTML = `
+    <div style="max-width:1100px; margin:auto;">
+
+      <button id="backToBrands"
+        style="background:#8b1538;color:white;border:none;
+        padding:12px 20px;border-radius:8px;cursor:pointer;">
+        ← Kembali ke Daftar Brand
+      </button>
+
+      <h2 style="margin-top:25px;">${brand.brandName}</h2>
+      <h3>MDS RETAILING - DIVISION 1</h3>
+      <p>World: ${brand.world}</p>
+      <hr>
+
+      <h3>JENIS PRODUCT TRACKING</h3>
+
+      <div class="menu-grid">
+
+        <div class="menu-card" data-tracking="Best Seller">
+          <span>🏆</span>
+          <h3>Best Seller</h3>
+          <p>Monitoring produk dengan penjualan tertinggi.</p>
+        </div>
+
+        <div class="menu-card" data-tracking="New Arrival">
+          <span>🆕</span>
+          <h3>New Arrival</h3>
+          <p>Monitoring produk baru yang masuk ke toko.</p>
+        </div>
+
+        <div class="menu-card" data-tracking="Missing Size">
+          <span>📏</span>
+          <h3>Missing Size</h3>
+          <p>Monitoring ukuran produk yang kosong.</p>
+        </div>
+
+        <div class="menu-card" data-tracking="Dead Stock">
+          <span>📦</span>
+          <h3>Dead Stock</h3>
+          <p>Monitoring produk dengan pergerakan penjualan rendah.</p>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById("backToBrands")
+    .addEventListener("click", showProductTracking);
+
+  dashboard.querySelectorAll("[data-tracking]")
+    .forEach(card => {
+      card.addEventListener("click", function() {
+        const trackingType = this.dataset.tracking;
+
+        alert(
+          trackingType + " untuk brand " + brand.brandName +
+          " akan kita buat pada tahap berikutnya."
+        );
+      });
+    });
+}
+
 
 </script>
 </body>
