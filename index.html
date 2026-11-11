@@ -544,7 +544,57 @@ function showTrackingForm(trackingType, brand) {
 
   window.selectedBrand = brand;
 }
-   
+function showTrackingForm(trackingType, brand) {
+  const dashboard = document.getElementById("dashboard");
+
+  dashboard.innerHTML = `
+    <div style="max-width:700px;margin:auto;padding:20px;">
+
+      <button type="button" id="backToBrand"
+        style="background:#8b1538;color:white;border:none;
+        padding:12px 20px;border-radius:8px;">
+        ← Kembali
+      </button>
+
+      <h2>${trackingType}</h2>
+      <h3>${brand.brandName}</h3>
+      <p>World: ${brand.world}</p>
+
+      <hr>
+
+      <label>Nama Produk</label>
+      <input id="productName" type="text"
+        placeholder="Masukkan nama produk">
+
+      <br><br>
+
+      <label>Article Code</label>
+      <input id="articleCode" type="text"
+        placeholder="Masukkan kode artikel">
+
+      <br><br>
+
+      <label>Jumlah Produk</label>
+      <input id="productQty" type="number" min="1"
+        placeholder="Masukkan jumlah">
+
+      <br><br>
+
+      <button type="button" id="saveTracking">
+        SIMPAN
+      </button>
+
+    </div>
+  `;
+
+  document.getElementById("backToBrand").onclick = function() {
+    showBrandTracking(brand);
+  };
+
+  document.getElementById("saveTracking").onclick = function() {
+    alert("Form berhasil diisi. Penyimpanan database akan dibuat berikutnya.");
+  };
+}   
 </script>
 </body>
 </html>
