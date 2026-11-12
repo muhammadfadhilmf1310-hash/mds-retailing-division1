@@ -273,8 +273,14 @@ const staffMenu = `
   </div>
 `;
 
+function backToDashboard() {
+  const dashboard = document.getElementById("dashboard");
 
-function showDashboard() {
+  dashboard.style.display = "block";
+  showDashboard();
+}
+
+      function showDashboard() {
   dashboard.innerHTML = `
     <div style="max-width:1100px; margin:auto;">
       <h2>MDS RETAILING</h2>
@@ -838,13 +844,7 @@ async function showProductAnalytics() {
     </div>
   `;
 
-  document.getElementById("backAnalytics").onclick = function() {
-  const dashboard = document.getElementById("dashboard");
-
-  dashboard.style.display = "block";
-  showDashboard();
-};
-
+  document.getElementById("backAnalytics").onclick = backToDashboard;
   let allRecords = [];
 
   const worldFilter = document.getElementById("filterWorld");
