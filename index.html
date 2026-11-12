@@ -501,13 +501,26 @@ function showBrandTracking(brand) {
     });
 }
 // FORM INPUT PRODUCT TRACKING
+
 function showTrackingForm(trackingType, brand) {
   const dashboard = document.getElementById("dashboard");
+
+  const letterSizes = [
+    "XS", "S", "M", "L", "XL", "XXL",
+    "XXXL", "XXXXL", "XXXXXL", "XXXXXXL"
+  ];
+
+  const numberSizes = Array.from(
+    { length: 13 },
+    (_, i) => String(i + 28)
+  );
+
+  const sizeOptions = [...letterSizes, ...numberSizes];
 
   dashboard.innerHTML = `
     <div style="max-width:700px; margin:auto; padding:20px;">
 
-      <button type="button" onclick="showBrandTracking(window.selectedBrand)"
+      <button type="button" id="backToBrand"
         style="background:#8b1538;color:white;border:none;
         padding:12px 20px;border-radius:8px;cursor:pointer;">
         ← Kembali
@@ -528,22 +541,131 @@ function showTrackingForm(trackingType, brand) {
         placeholder="Masukkan kode artikel"
         style="width:100%;padding:12px;margin:8px 0 16px;">
 
-      <label>Jumlah Produk</label>
-      <input id="productQty" type="number" min="1"
-        placeholder="Masukkan jumlah"
+      <label>Size</label>
+      <select id="productSize"
+        style="width:100%;padding:12px;margin:8px 0 16px;">
+        <option value="">Pilih Size</option>
+        <optgroup label="Ukuran Huruf">
+          ${letterSizes.map(size =>
+            `<option value="${size}">${size}</option>`
+          ).join("")}
+        </optgroup>
+        <optgroup label="Ukuran Angka">
+          ${numberSizes.map(size =>
+            `<option value="${size}">${size}</option>`
+          ).join("")}
+        </optgroup>
+      </select>
+
+      <label>Sisa Stock</label>
+      <input id="currentStock" type="number" min="0"
+        placeholder="Masukkan sisa stock"
         style="width:100%;padding:12px;margin:8px 0 16px;">
 
-      <button type="button" onclick="alert('Form akan dihubungkan ke database pada tahap berikutnya.')"
+      <label>Stock Terjual</label>
+      <input id="soldQty" type="number" min="0"
+        placeholder="Masukkan stock terjual"
+        style="width:100%;padding:12px;margin:8px 0 16px;">
+
+      <button type="button" id="saveTracking"
         style="background:#8b1538;color:white;border:none;
         padding:12px 20px;border-radius:8px;cursor:pointer;">
         SIMPAN
       </button>
 
+      <p id="trackingMessage"></p>
     </div>
   `;
 
-  window.selectedBrand = brand;
+  document.getElementById("backToBrand").onclick = function() {
+    showBrandTracking(brand);
+  };
+
+  document.getElementById("saveTracking").onclick = async function() {
+    const button = this;
+    const message = document.getElementById("trackingMessage");
+
+    const productName =
+      document.getElementById("productName").value.trim();
+
+    const articleCode =
+      document.getElementById("articleCode").value.trim();
+
+    const size =
+      document.getElementById("productSize").value;
+
+    const currentStock =
+      document.getElementById("currentStock").value;
+
+    const soldQty =
+      document.getElementById("soldQty").value;
+
+    if (
+      !productName ||
+      !articleCode ||
+      !size ||
+      currentStock === "" ||
+      soldQty === "" ||
+      !Number.isInteger(Number(currentStock)) ||
+      !Number.isInteger(Number(soldQty)) ||
+      Number(currentStock) < 0 ||
+      Number(soldQty) < 0
+    ) {
+      message.style.color = "red";
+      message.textContent = "Lengkapi semua data dengan benar.";
+      return;
+    }
+
+    button.disabled = true;
+    message.style.color = "#555";
+    message.textContent = "Sedang menyimpan data...";
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          action: "saveTracking",
+          token: sessionStorage.getItem("mds_token"),
+          trackingType: trackingType,
+          brandId: brand.brandId,
+          productName: productName,
+          articleCode: articleCode,
+          size: size,
+          currentStock: Number(currentStock),
+          soldQty: Number(soldQty)
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.style.color = "green";
+        message.textContent = result.message;
+
+        document.getElementById("productName").value = "";
+        document.getElementById("articleCode").value = "";
+        document.getElementById("productSize").value = "";
+        document.getElementById("currentStock").value = "";
+        document.getElementById("soldQty").value = "";
+      } else {
+        message.style.color = "red";
+        message.textContent =
+          result.message || "Gagal menyimpan data.";
+      }
+
+    } catch (error) {
+      message.style.color = "red";
+      message.textContent =
+        "Gagal menghubungi server: " + error.message;
+    } finally {
+      button.disabled = false;
+    }
+  };
 }
+
 
 function showTrackingForm(trackingType, brand) {
   const dashboard = document.getElementById("dashboard");
