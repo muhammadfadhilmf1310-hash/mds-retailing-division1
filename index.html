@@ -219,6 +219,11 @@ const supervisorMenu = `
       <h3>Sales Performance</h3>
       <p>Monitoring penjualan divisi</p>
     </div>
+    <div class="menu-card">
+  <span>📈</span>
+  <h3>Product Analytics</h3>
+  <p>Analisis stok, penjualan, dan performa artikel</p>
+</div>
 
     <div class="menu-card">
       <span>🎯</span>
@@ -292,10 +297,14 @@ function showDashboard() {
       const menuName = card.querySelector("h3").textContent.trim();
 
       if (menuName === "Product Tracking") {
-        showProductTracking();
-      } else {
-        alert("Menu " + menuName + " akan segera tersedia.");
-      }
+  showProductTracking();
+
+} else if (menuName === "Product Analytics") {
+  showProductAnalytics();
+
+} else {
+  alert("Menu " + menuName + " akan segera tersedia.");
+}
     });
   });
 }
@@ -666,6 +675,267 @@ function showTrackingForm(trackingType, brand) {
   };
 }
 
+
+async function showProductAnalytics() {
+  const dashboard = document.getElementById("dashboard");
+
+  dashboard.innerHTML = `
+    <div style="max-width:1100px;margin:auto;padding:20px;">
+      <button id="backAnalytics"
+        style="background:#8b1538;color:white;border:none;
+        padding:12px 20px;border-radius:8px;cursor:pointer;">
+        ← Kembali ke Dashboard
+      </button>
+
+      <h2 style="margin-top:20px;">PRODUCT ANALYTICS</h2>
+      <h3>DIVISION 1 MANAGEMENT</h3>
+      <p>Young Fashion & Ladies Contemporary</p>
+
+      <hr>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:20px 0;">
+        <select id="filterWorld"
+          style="padding:12px;flex:1;min-width:180px;">
+          <option value="All">Semua World</option>
+          <option value="Young Fashion">Young Fashion</option>
+          <option value="Ladies Contemporary">Ladies Contemporary</option>
+        </select>
+
+        <select id="filterBrand"
+          style="padding:12px;flex:1;min-width:180px;">
+          <option value="All">Semua Brand</option>
+        </select>
+
+        <select id="filterType"
+          style="padding:12px;flex:1;min-width:180px;">
+          <option value="All">Semua Tracking</option>
+          <option value="Best Seller">Best Seller</option>
+          <option value="New Arrival">New Arrival</option>
+          <option value="Missing Size">Missing Size</option>
+          <option value="Dead Stock">Dead Stock</option>
+        </select>
+      </div>
+
+      <p id="analyticsMessage">Mengambil data...</p>
+
+      <div id="analyticsContent" style="display:none;">
+
+        <div style="display:grid;grid-template-columns:
+          repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+
+          <div style="background:#f2f2f2;padding:18px;border-radius:10px;">
+            <p>Total Artikel</p>
+            <h2 id="totalArticles">0</h2>
+          </div>
+
+          <div style="background:#f2f2f2;padding:18px;border-radius:10px;">
+            <p>Total Sisa Stock</p>
+            <h2 id="totalStock">0</h2>
+          </div>
+
+          <div style="background:#f2f2f2;padding:18px;border-radius:10px;">
+            <p>Total Stock Terjual</p>
+            <h2 id="totalSold">0</h2>
+          </div>
+        </div>
+
+        <h3 style="margin-top:30px;">TOP BEST SELLER</h3>
+        <div id="topSeller"></div>
+
+        <h3 style="margin-top:30px;">LOW STOCK ALERT</h3>
+        <div id="lowStock"></div>
+
+        <h3 style="margin-top:30px;">DETAIL PRODUCT TRACKING</h3>
+        <div id="trackingTable"></div>
+
+      </div>
+    </div>
+  `;
+
+  document.getElementById("backAnalytics").onclick = function() {
+    showDashboard();
+  };
+
+  let allRecords = [];
+
+  const worldFilter = document.getElementById("filterWorld");
+  const brandFilter = document.getElementById("filterBrand");
+  const typeFilter = document.getElementById("filterType");
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "getTrackingAnalytics",
+        token: sessionStorage.getItem("mds_token")
+      })
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "Gagal mengambil data.");
+    }
+
+    allRecords = result.records || [];
+
+    const brands = [...new Map(
+      allRecords.map(record => [
+        record.brandId,
+        {
+          id: record.brandId,
+          name: record.brandName,
+          world: record.world
+        }
+      ])
+    ).values()];
+
+    brands.forEach(brand => {
+      const option = document.createElement("option");
+      option.value = brand.id;
+      option.textContent = brand.name;
+      brandFilter.appendChild(option);
+    });
+
+    document.getElementById("analyticsMessage").style.display = "none";
+    document.getElementById("analyticsContent").style.display = "block";
+
+    function renderAnalytics() {
+      const world = worldFilter.value;
+      const brand = brandFilter.value;
+      const type = typeFilter.value;
+
+      const filtered = allRecords.filter(record =>
+        (world === "All" || record.world === world) &&
+        (brand === "All" || String(record.brandId) === brand) &&
+        (type === "All" || record.trackingType === type)
+      );
+
+      const articleKeys = new Set(
+        filtered.map(record =>
+          String(record.brandId) + "|" + String(record.articleCode)
+        )
+      );
+
+      const totalStock = filtered.reduce(
+        (sum, record) => sum + record.currentStock, 0
+      );
+
+      const totalSold = filtered.reduce(
+        (sum, record) => sum + record.soldQty, 0
+      );
+
+      document.getElementById("totalArticles").textContent =
+        articleKeys.size.toLocaleString("id-ID");
+
+      document.getElementById("totalStock").textContent =
+        totalStock.toLocaleString("id-ID");
+
+      document.getElementById("totalSold").textContent =
+        totalSold.toLocaleString("id-ID");
+
+      const bestSeller = [...filtered]
+        .sort((a, b) => b.soldQty - a.soldQty)
+        .slice(0, 10);
+
+      document.getElementById("topSeller").innerHTML =
+        bestSeller.length
+          ? `<div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                  <th>Produk</th><th>Brand</th>
+                  <th>Size</th><th>Terjual</th>
+                </tr>
+                ${bestSeller.map(record => `
+                  <tr>
+                    <td>${escapeAnalytics(record.productName)}</td>
+                    <td>${escapeAnalytics(record.brandName)}</td>
+                    <td>${escapeAnalytics(record.size)}</td>
+                    <td>${record.soldQty}</td>
+                  </tr>
+                `).join("")}
+              </table>
+            </div>`
+          : "<p>Belum ada data.</p>";
+
+      const lowStock = filtered
+        .filter(record => record.currentStock <= 3)
+        .sort((a, b) => a.currentStock - b.currentStock);
+
+      document.getElementById("lowStock").innerHTML =
+        lowStock.length
+          ? lowStock.map(record => `
+              <div style="padding:12px;background:#fff3cd;
+                margin-bottom:8px;border-radius:8px;">
+                <strong>${escapeAnalytics(record.productName)}</strong>
+                (${escapeAnalytics(record.size)}) —
+                ${escapeAnalytics(record.brandName)}
+                <br>Sisa stock: ${record.currentStock}
+              </div>
+            `).join("")
+          : "<p>Tidak ada artikel dengan stok 3 pcs atau kurang.</p>";
+
+      document.getElementById("trackingTable").innerHTML =
+        filtered.length
+          ? `<div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                  <th>Produk</th><th>Article</th><th>Size</th>
+                  <th>Brand</th><th>Sisa Stock</th><th>Terjual</th>
+                </tr>
+                ${filtered.map(record => `
+                  <tr>
+                    <td>${escapeAnalytics(record.productName)}</td>
+                    <td>${escapeAnalytics(record.articleCode)}</td>
+                    <td>${escapeAnalytics(record.size)}</td>
+                    <td>${escapeAnalytics(record.brandName)}</td>
+                    <td>${record.currentStock}</td>
+                    <td>${record.soldQty}</td>
+                  </tr>
+                `).join("")}
+              </table>
+            </div>`
+          : "<p>Belum ada data untuk filter ini.</p>";
+    }
+
+    worldFilter.onchange = function() {
+      brandFilter.value = "All";
+
+      Array.from(brandFilter.options).forEach(option => {
+        if (option.value === "All") return;
+
+        const brand = brands.find(item => item.id === option.value);
+        option.hidden = worldFilter.value !== "All" &&
+          brand.world !== worldFilter.value;
+      });
+
+      renderAnalytics();
+    };
+
+    brandFilter.onchange = renderAnalytics;
+    typeFilter.onchange = renderAnalytics;
+
+    renderAnalytics();
+
+  } catch (error) {
+    document.getElementById("analyticsMessage").style.color = "red";
+    document.getElementById("analyticsMessage").textContent =
+      "Gagal mengambil data: " + error.message;
+  }
+}
+
+function escapeAnalytics(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
 
 
 
