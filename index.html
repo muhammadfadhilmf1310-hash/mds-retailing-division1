@@ -839,7 +839,10 @@ async function showProductAnalytics() {
   `;
 
   document.getElementById("backAnalytics").onclick = function() {
-  window.location.reload();
+  const dashboard = document.getElementById("dashboard");
+
+  dashboard.style.display = "block";
+  showDashboard();
 };
 
   let allRecords = [];
