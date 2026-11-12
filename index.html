@@ -273,12 +273,12 @@ const staffMenu = `
   </div>
 `;
 
-function backToDashboard() {
+window.backToDashboard = function() {
   const dashboard = document.getElementById("dashboard");
 
   dashboard.style.display = "block";
   showDashboard();
-}
+};
 
       function showDashboard() {
   dashboard.innerHTML = `
@@ -844,7 +844,7 @@ async function showProductAnalytics() {
     </div>
   `;
 
-  document.getElementById("backAnalytics").onclick = backToDashboard;
+  document.getElementById("backAnalytics").onclick = window.backToDashboard;
   let allRecords = [];
 
   const worldFilter = document.getElementById("filterWorld");
