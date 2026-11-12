@@ -680,7 +680,94 @@ async function showProductAnalytics() {
   const dashboard = document.getElementById("dashboard");
 
   dashboard.innerHTML = `
-    <div style="max-width:1100px;margin:auto;padding:20px;">
+    
+<style>
+  .analytics-section {
+    margin-top: 30px;
+  }
+
+  .analytics-section h3 {
+    color: #8b1538;
+    margin-bottom: 15px;
+    font-size: 20px;
+  }
+
+  .analytics-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin: 25px 0;
+  }
+
+  .analytics-card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .analytics-card p {
+    color: #666;
+    margin: 0 0 10px;
+  }
+
+  .analytics-card h2 {
+    color: #8b1538;
+    font-size: 28px;
+    margin: 0;
+  }
+
+  .analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 14px;
+  }
+
+  .analytics-table th {
+    background: #8b1538;
+    color: white;
+    padding: 13px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .analytics-table td {
+    padding: 13px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+
+  .analytics-table tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  .analytics-table tr:hover {
+    background: #fff0f3;
+  }
+
+  .analytics-scroll {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+  }
+
+  .analytics-alert {
+    background: #fff3cd;
+    border-left: 5px solid #e0a800;
+    padding: 14px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 600px) {
+    .analytics-table {
+      min-width: 650px;
+    }
+  }
+</style>
+<div style="max-width:1100px;margin:auto;padding:20px;">
       <button id="backAnalytics"
         style="background:#8b1538;color:white;border:none;
         padding:12px 20px;border-radius:8px;cursor:pointer;">
@@ -720,20 +807,19 @@ async function showProductAnalytics() {
 
       <div id="analyticsContent" style="display:none;">
 
-        <div style="display:grid;grid-template-columns:
-          repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+       <div class="analytics-cards">
 
-          <div style="background:#f2f2f2;padding:18px;border-radius:10px;">
+          <div class="analytics-card">
             <p>Total Artikel</p>
             <h2 id="totalArticles">0</h2>
           </div>
 
-          <div style="background:#f2f2f2;padding:18px;border-radius:10px;">
+          <div class="analytics-card">
             <p>Total Sisa Stock</p>
             <h2 id="totalStock">0</h2>
           </div>
 
-          <div style="background:#f2f2f2;padding:18px;border-radius:10px;">
+          <div class="analytics-card">
             <p>Total Stock Terjual</p>
             <h2 id="totalSold">0</h2>
           </div>
@@ -843,8 +929,8 @@ async function showProductAnalytics() {
 
       document.getElementById("topSeller").innerHTML =
         bestSeller.length
-          ? `<div style="overflow-x:auto;">
-              <table style="width:100%;border-collapse:collapse;">
+          ? `<div class="analytics-scroll">
+              <table class="analytics-table">
                 <tr>
                   <th>Produk</th><th>Brand</th>
                   <th>Size</th><th>Terjual</th>
@@ -868,8 +954,7 @@ async function showProductAnalytics() {
       document.getElementById("lowStock").innerHTML =
         lowStock.length
           ? lowStock.map(record => `
-              <div style="padding:12px;background:#fff3cd;
-                margin-bottom:8px;border-radius:8px;">
+              <div class="analytics-alert">
                 <strong>${escapeAnalytics(record.productName)}</strong>
                 (${escapeAnalytics(record.size)}) —
                 ${escapeAnalytics(record.brandName)}
@@ -880,8 +965,8 @@ async function showProductAnalytics() {
 
       document.getElementById("trackingTable").innerHTML =
         filtered.length
-          ? `<div style="overflow-x:auto;">
-              <table style="width:100%;border-collapse:collapse;">
+          ? `<div class="analytics-scroll">
+              <table class="analytics-table">
                 <tr>
                   <th>Produk</th><th>Article</th><th>Size</th>
                   <th>Brand</th><th>Sisa Stock</th><th>Terjual</th>
