@@ -1028,7 +1028,314 @@ function escapeAnalytics(value) {
   })[character]);
 }
 
+async function showSalesPerformance() {
+  const dashboard = document.getElementById("dashboard");
+  const token = sessionStorage.getItem("mds_token");
 
+  if (!token) {
+    alert("Sesi login berakhir. Silakan login kembali.");
+    return;
+  }
+
+  const today = new Date();
+  const todayText =
+    today.getFullYear() + "-" +
+    String(today.getMonth() + 1).padStart(2, "0") + "-" +
+    String(today.getDate()).padStart(2, "0");
+
+  dashboard.innerHTML = `
+    <div style="max-width:1100px;margin:auto;">
+      <button id="salesBack"
+        style="background:#8b1538;color:white;border:none;
+        padding:12px 20px;border-radius:8px;cursor:pointer;">
+        ← Kembali ke Dashboard
+      </button>
+
+      <h2 style="margin-top:25px;">SALES PERFORMANCE</h2>
+      <p>MDS RETAILING - DIVISION 1</p>
+      <hr>
+
+      <h3>INPUT PENJUALAN HARIAN</h3>
+
+      <div style="background:white;padding:20px;border-radius:12px;
+        box-shadow:0 2px 8px #ddd;margin-bottom:25px;">
+
+        <form id="salesForm">
+          <label>Tanggal Penjualan</label>
+          <input type="date" id="salesDate" value="${todayText}"
+            required style="width:100%;padding:12px;margin:8px 0 15px;">
+
+          <label>Brand</label>
+          <select id="salesBrand" required
+            style="width:100%;padding:12px;margin:8px 0 15px;">
+            <option value="">Memuat brand...</option>
+          </select>
+
+          <label>Nominal Penjualan (Rp)</label>
+          <input type="number" id="salesValue" min="0" required
+            placeholder="Contoh: 1500000"
+            style="width:100%;padding:12px;margin:8px 0 15px;">
+
+          <label>Quantity Terjual</label>
+          <input type="number" id="salesQty" min="0" required
+            placeholder="Jumlah pcs"
+            style="width:100%;padding:12px;margin:8px 0 15px;">
+
+          <label>Jumlah Transaksi</label>
+          <input type="number" id="salesTrx" min="0" required
+            placeholder="Jumlah transaksi"
+            style="width:100%;padding:12px;margin:8px 0 15px;">
+
+          <label>Catatan (Opsional)</label>
+          <textarea id="salesNotes"
+            style="width:100%;padding:12px;margin:8px 0 15px;"
+            placeholder="Catatan penjualan"></textarea>
+
+          <button type="submit" id="salesSubmit"
+            style="background:#8b1538;color:white;border:none;
+            padding:13px 25px;border-radius:8px;cursor:pointer;">
+            Simpan Penjualan
+          </button>
+        </form>
+
+        <p id="salesMessage"></p>
+      </div>
+
+      <h3>MONITORING PENJUALAN</h3>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+        <button class="salesPeriod" data-period="daily">Daily</button>
+        <button class="salesPeriod" data-period="mtd">MTD</button>
+        <button class="salesPeriod" data-period="ytd">YTD</button>
+        <input type="date" id="dashboardDate" value="${todayText}"
+          style="padding:10px;">
+      </div>
+
+      <div id="salesDashboard">
+        <p>Memuat data penjualan...</p>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("salesBack").onclick =
+    window.backToDashboard;
+
+  const api = async payload => {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        ...payload,
+        token: token
+      })
+    });
+
+    return await response.json();
+  };
+
+  let currentPeriod = "mtd";
+
+  const formatRupiah = value =>
+    "Rp " + Number(value || 0).toLocaleString("id-ID");
+
+  // Memuat brand yang boleh diakses pengguna
+  try {
+    const result = await api({
+      action: "getTrackingBrands"
+    });
+
+    if (!result.success) {
+      throw new Error(result.message || "Gagal memuat brand.");
+    }
+
+    const brandSelect = document.getElementById("salesBrand");
+
+    brandSelect.innerHTML =
+      '<option value="">Pilih Brand</option>' +
+      result.brands.map(brand => `
+        <option value="${brand.brandId}">
+          ${brand.brandName} - ${brand.world}
+        </option>
+      `).join("");
+
+  } catch (error) {
+    document.getElementById("salesMessage").textContent =
+      "Gagal memuat brand: " + error.message;
+  }
+
+  // Menyimpan input penjualan
+  document.getElementById("salesForm").onsubmit =
+    async function(event) {
+      event.preventDefault();
+
+      const button = document.getElementById("salesSubmit");
+      const message = document.getElementById("salesMessage");
+
+      button.disabled = true;
+      button.textContent = "Menyimpan...";
+      message.textContent = "";
+
+      try {
+        const result = await api({
+          action: "saveDailySales",
+          date: document.getElementById("salesDate").value,
+          brandId: document.getElementById("salesBrand").value,
+          salesValue: Number(document.getElementById("salesValue").value),
+          qtySold: Number(document.getElementById("salesQty").value),
+          transactionCount: Number(document.getElementById("salesTrx").value),
+          notes: document.getElementById("salesNotes").value
+        });
+
+        if (!result.success) {
+          throw new Error(result.message || "Gagal menyimpan penjualan.");
+        }
+
+        message.style.color = "green";
+        message.textContent = "Penjualan berhasil disimpan!";
+
+        document.getElementById("salesForm").reset();
+        document.getElementById("salesDate").value = todayText;
+
+        await loadSalesDashboard();
+
+      } catch (error) {
+        message.style.color = "red";
+        message.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Simpan Penjualan";
+      }
+    };
+
+  // Memuat dashboard
+  async function loadSalesDashboard() {
+    const area = document.getElementById("salesDashboard");
+    const selectedDate = document.getElementById("dashboardDate").value;
+
+    area.innerHTML = "<p>Memuat data penjualan...</p>";
+
+    try {
+      const result = await api({
+        action: "getSalesPerformance",
+        period: currentPeriod,
+        date: selectedDate
+      });
+
+      if (!result.success) {
+        throw new Error(result.message || "Gagal memuat dashboard.");
+      }
+
+      const summary = result.summary;
+
+      area.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+          gap:12px;margin-bottom:25px;">
+
+          ${[
+            ["TARGET", formatRupiah(summary.target)],
+            ["ACTUAL", formatRupiah(summary.actual)],
+            ["QUANTITY", summary.qty.toLocaleString("id-ID") + " Pcs"],
+            ["TRANSAKSI", summary.transactions.toLocaleString("id-ID")],
+            ["ACHIEVEMENT", Number(summary.achievement).toFixed(1) + "%"]
+          ].map(item => `
+            <div style="background:white;padding:18px;border-radius:10px;
+              box-shadow:0 2px 7px #ddd;">
+              <small>${item[0]}</small>
+              <h3 style="margin:10px 0;color:#8b1538;">${item[1]}</h3>
+            </div>
+          `).join("")}
+        </div>
+
+        <h3>PERFORMA PER WORLD</h3>
+        ${result.worlds.map(world => `
+          <div style="background:white;padding:15px;margin-bottom:10px;
+            border-radius:8px;">
+            <b>${world.world}</b>
+            <p>Actual: ${formatRupiah(world.actual)}</p>
+            <p>Kontribusi: ${Number(world.contribution).toFixed(1)}%</p>
+            <p>Achievement: ${Number(world.achievement).toFixed(1)}%</p>
+          </div>
+        `).join("")}
+
+        <h3>RANKING BRAND</h3>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;background:white;">
+            <thead>
+              <tr style="background:#8b1538;color:white;">
+                <th style="padding:10px;">Brand</th>
+                <th>Actual</th>
+                <th>Target</th>
+                <th>Achievement</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${result.brands.map(brand => `
+                <tr>
+                  <td style="padding:10px;border-bottom:1px solid #ddd;">
+                    ${brand.brandName}
+                  </td>
+                  <td>${formatRupiah(brand.actual)}</td>
+                  <td>${formatRupiah(brand.target)}</td>
+                  <td>${Number(brand.achievement).toFixed(1)}%</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 style="margin-top:25px;">RANKING KARYAWAN</h3>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;background:white;">
+            <thead>
+              <tr style="background:#8b1538;color:white;">
+                <th style="padding:10px;">Nama</th>
+                <th>Role</th>
+                <th>Actual</th>
+                <th>Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${result.individuals.map((person, index) => `
+                <tr>
+                  <td style="padding:10px;border-bottom:1px solid #ddd;">
+                    ${index + 1}. ${person.name}
+                  </td>
+                  <td>${person.role}</td>
+                  <td>${formatRupiah(person.actual)}</td>
+                  <td>${person.qty}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+    } catch (error) {
+      area.innerHTML =
+        `<p style="color:red;">${error.message}</p>`;
+    }
+  }
+
+  // Tombol periode
+  document.querySelectorAll(".salesPeriod").forEach(button => {
+    button.style.padding = "10px 18px";
+    button.style.border = "1px solid #8b1538";
+    button.style.borderRadius = "7px";
+    button.style.cursor = "pointer";
+
+    button.onclick = async function() {
+      currentPeriod = button.dataset.period;
+      await loadSalesDashboard();
+    };
+  });
+
+  document.getElementById("dashboardDate").onchange =
+    loadSalesDashboard;
+
+  await loadSalesDashboard();
+}
 
 </script>
 </body>
