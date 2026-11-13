@@ -1069,9 +1069,19 @@ async function showSalesPerformance() {
           <select id="salesBrand" required
             style="width:100%;padding:12px;margin:8px 0 15px;">
             <option value="">Memuat brand...</option>
-          </select>
+          
+</select>
 
-          <label>Nominal Penjualan (Rp)</label>
+<label>Jenis Penjualan</label>
+<select id="salesChannel" required
+  style="width:100%;padding:12px;margin:8px 0 15px;">
+  <option value="">Pilih jenis penjualan...</option>
+  <option value="Counter">Sales Counter</option>
+  <option value="Promo Table">Sales Table Promo</option>
+</select>
+
+<label>Nominal Penjualan (Rp)</label>
+
           <input type="number" id="salesValue" min="0" required
             placeholder="Contoh: 1500000"
             style="width:100%;padding:12px;margin:8px 0 15px;">
