@@ -1247,6 +1247,8 @@ salesValue: Number(document.getElementById("salesValue").value),
           ${[
             ["TARGET", formatRupiah(summary.target)],
             ["ACTUAL", formatRupiah(summary.actual)],
+            ["SALES COUNTER", formatRupiah(result.channels.counter.actual)],
+["SALES TABLE PROMO", formatRupiah(result.channels.promoTable.actual)],
             ["QUANTITY", summary.qty.toLocaleString("id-ID") + " Pcs"],
             ["TRANSAKSI", summary.transactions.toLocaleString("id-ID")],
             ["ACHIEVEMENT", Number(summary.achievement).toFixed(1) + "%"]
