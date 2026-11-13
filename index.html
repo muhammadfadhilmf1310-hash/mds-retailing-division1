@@ -1190,9 +1190,10 @@ async function showSalesPerformance() {
       try {
         const result = await api({
           action: "saveDailySales",
-          date: document.getElementById("salesDate").value,
-          brandId: document.getElementById("salesBrand").value,
-          salesValue: Number(document.getElementById("salesValue").value),
+date: document.getElementById("salesDate").value,
+brandId: document.getElementById("salesBrand").value,
+salesChannel: document.getElementById("salesChannel").value,
+salesValue: Number(document.getElementById("salesValue").value),
           qtySold: Number(document.getElementById("salesQty").value),
           transactionCount: Number(document.getElementById("salesTrx").value),
           notes: document.getElementById("salesNotes").value
