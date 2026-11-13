@@ -302,17 +302,13 @@ window.backToDashboard = function() {
     card.addEventListener("click", function() {
       const menuName = card.querySelector("h3").textContent.trim();
 
-      if (menuName === "Product Tracking") {
+    if (menuName === "Product Tracking") {
   showProductTracking();
-
 } else if (menuName === "Product Analytics") {
   showProductAnalytics();
-
 } else if (menuName === "Sales Performance") {
   showSalesPerformance();
-}
-
-else {
+} else {
   alert("Menu " + menuName + " akan segera tersedia.");
 }
     });
